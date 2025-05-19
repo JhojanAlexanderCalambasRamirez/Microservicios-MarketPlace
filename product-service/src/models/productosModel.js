@@ -3,7 +3,6 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// Configuración de conexión a la base de datos
 const db = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -74,12 +73,31 @@ async function actualizarStock(idProducto, cantidadComprada) {
   await db.query('UPDATE productos SET stock = ? WHERE id = ?', [nuevoStock, idProducto]);
 }
 
-// Exportar todas las funciones
+// ✅ NUEVO: Descontar múltiples productos según cantidades
+async function descontarStockLote(productos) {
+  for (const p of productos) {
+    await actualizarStock(p.id, p.cantidad);
+  }
+}
+
+// ✅ NUEVO: Reponer múltiples productos (si se cancela la orden)
+async function reponerStockLote(productos) {
+  for (const p of productos) {
+    const producto = await obtenerPorId(p.id);
+    if (producto) {
+      const nuevoStock = producto.stock + p.cantidad;
+      await db.query('UPDATE productos SET stock = ? WHERE id = ?', [nuevoStock, p.id]);
+    }
+  }
+}
+
 module.exports = {
   obtenerTodos,
   obtenerPorId,
   crear,
   actualizar,
   eliminar,
-  actualizarStock
+  actualizarStock,
+  descontarStockLote,
+  reponerStockLote
 };

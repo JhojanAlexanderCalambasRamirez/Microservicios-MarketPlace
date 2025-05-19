@@ -34,9 +34,10 @@ async function crear(req, res) {
       if (productoBD.stock < prod.cantidad) {
         return res.status(400).json({ mensaje: `Stock insuficiente para ${productoBD.nombre}` });
       }
-
+      prod.id = productoBD.id;
       prod.idVendedor = productoBD.idVendedor;
       prod.precio = productoBD.precio;
+      prod.nombre = productoBD.nombre;
 
       if (!ordenesPorVendedor[prod.idVendedor]) {
         ordenesPorVendedor[prod.idVendedor] = [];
@@ -91,14 +92,17 @@ async function porComprador(req, res) {
 async function actualizar(req, res) {
   try {
     const nuevoEstado = req.body.estado;
+    const idOrden = req.params.id;
+
     if (!ESTADOS_VALIDOS.includes(nuevoEstado)) {
       return res.status(400).json({ mensaje: 'Estado no válido' });
     }
 
-    await model.actualizarEstado(req.params.id, nuevoEstado);
+    await model.actualizarEstado(idOrden, nuevoEstado);
+
     res.json({ mensaje: 'Estado actualizado correctamente' });
   } catch (error) {
-    console.error('Error al actualizar estado:', error);
+    console.error('[ERROR EN actualizar]:', error);
     res.status(500).json({ mensaje: 'Error al actualizar estado' });
   }
 }
@@ -117,11 +121,36 @@ async function listarEstados(req, res) {
   res.json({ estados: ESTADOS_VALIDOS });
 }
 
+async function generarFactura(req, res) {
+  try {
+    const id = req.params.id;
+    const orden = await model.obtenerPorId(id);
+    if (!orden) return res.status(404).json({ mensaje: "Orden no encontrada" });
+
+    const comprador = await axios.get(`http://localhost:3003/usuarios/${orden.idComprador}`);
+    const vendedor = await axios.get(`http://localhost:3003/usuarios/${orden.idVendedor}`);
+
+    res.json({
+      numeroFactura: `FCT-${orden.id}`,
+      fecha: new Date().toISOString(),
+      comprador: comprador.data,
+      vendedor: vendedor.data,
+      productos: orden.productos,
+      total: orden.total,
+      estado: orden.estado
+    });
+  } catch (error) {
+    console.error("Error generando factura:", error);
+    res.status(500).json({ mensaje: "Error generando factura" });
+  }
+}
+
 module.exports = {
   crear,
   listar,
   porComprador,
   actualizar,
   eliminar,
-  listarEstados
+  listarEstados,
+  generarFactura
 };

@@ -22,6 +22,11 @@ module.exports = {
     return rows[0];
   },
 
+  async buscarPorId(id) {
+    const [rows] = await db.query('SELECT id, nombre, correo, rol FROM usuarios WHERE id = ?', [id]);
+    return rows[0];
+  },
+
   async obtenerTodos() {
     const [rows] = await db.query(
       'SELECT id, nombre, correo, rol, fechaRegistro FROM usuarios'

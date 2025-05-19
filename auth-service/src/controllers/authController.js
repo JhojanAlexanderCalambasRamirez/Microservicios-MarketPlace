@@ -48,6 +48,14 @@ async function obtenerUsuarios(req, res) {
   res.json(usuarios);
 }
 
+async function obtenerUsuarioPorId(req, res) {
+  const usuario = await model.buscarPorId(req.params.id);
+  if (!usuario) {
+    return res.status(404).json({ mensaje: "Usuario no encontrado" });
+  }
+  res.json(usuario);
+}
+
 async function eliminarUsuario(req, res) {
   const id = req.params.id;
   const resultado = await model.eliminar(id);
@@ -74,6 +82,7 @@ module.exports = {
   login,
   validateToken,
   obtenerUsuarios,
+  obtenerUsuarioPorId, // 👈 exportación agregada
   eliminarUsuario,
   editarUsuario
 };

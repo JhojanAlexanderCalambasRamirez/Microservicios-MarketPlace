@@ -5,8 +5,9 @@ const ctrl = require('../controllers/ordenesController');
 router.post('/', ctrl.crear);
 router.get('/', ctrl.listar);
 router.get('/comprador/:id', ctrl.porComprador);
-router.get('/estados', ctrl.listarEstados); // ✅ nuevo endpoint
+router.get('/estados', ctrl.listarEstados);  
 router.put('/:id', ctrl.actualizar);
 router.delete('/:id', ctrl.eliminar);
+router.get('/:id/factura', ctrl.generarFactura);
 
 module.exports = router;
