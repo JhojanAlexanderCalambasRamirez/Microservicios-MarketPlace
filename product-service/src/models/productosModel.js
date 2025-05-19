@@ -1,0 +1,85 @@
+// src/external/productosModel.js
+
+const mysql = require('mysql2/promise');
+require('dotenv').config();
+
+// Configuración de conexión a la base de datos
+const db = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'product_service',
+  port: process.env.DB_PORT || 3306,
+});
+
+async function obtenerTodos() {
+  const [rows] = await db.query('SELECT * FROM productos');
+  return rows;
+}
+
+async function obtenerPorId(id) {
+  const [rows] = await db.query('SELECT * FROM productos WHERE id = ?', [id]);
+  return rows[0];
+}
+
+async function crear(producto) {
+  const sql = `
+    INSERT INTO productos (nombre, descripcion, precio, stock, idVendedor, urlImagen)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  const values = [
+    producto.nombre,
+    producto.descripcion,
+    producto.precio,
+    producto.stock,
+    producto.idVendedor,
+    producto.urlImagen
+  ];
+  const [res] = await db.query(sql, values);
+  return res.insertId;
+}
+
+async function actualizar(id, producto) {
+  const sql = `
+    UPDATE productos
+    SET nombre = ?, descripcion = ?, precio = ?, stock = ?, urlImagen = ?
+    WHERE id = ?
+  `;
+  const values = [
+    producto.nombre,
+    producto.descripcion,
+    producto.precio,
+    producto.stock,
+    producto.urlImagen,
+    id
+  ];
+  await db.query(sql, values);
+}
+
+async function eliminar(id) {
+  await db.query('DELETE FROM productos WHERE id = ?', [id]);
+}
+
+async function actualizarStock(idProducto, cantidadComprada) {
+  const producto = await obtenerPorId(idProducto);
+  if (!producto) {
+    throw new Error(`Producto con ID ${idProducto} no encontrado`);
+  }
+
+  if (producto.stock < cantidadComprada) {
+    throw new Error(`Stock insuficiente para el producto "${producto.nombre}"`);
+  }
+
+  const nuevoStock = producto.stock - cantidadComprada;
+  await db.query('UPDATE productos SET stock = ? WHERE id = ?', [nuevoStock, idProducto]);
+}
+
+// Exportar todas las funciones
+module.exports = {
+  obtenerTodos,
+  obtenerPorId,
+  crear,
+  actualizar,
+  eliminar,
+  actualizarStock
+};
