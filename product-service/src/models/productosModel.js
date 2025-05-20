@@ -1,5 +1,3 @@
-// src/external/productosModel.js
-
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
@@ -89,6 +87,10 @@ async function reponerStockLote(productos) {
       await db.query('UPDATE productos SET stock = ? WHERE id = ?', [nuevoStock, p.id]);
     }
   }
+}
+
+async function actualizarStock(id, nuevoStock) {
+  await db.query('UPDATE productos SET stock = ? WHERE id = ?', [nuevoStock, id]);
 }
 
 module.exports = {

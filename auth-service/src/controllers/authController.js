@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const axios = require('axios');
 const model = require('../models/usuarioModel');
 
 const generarToken = (usuario) => {
@@ -9,13 +10,25 @@ const generarToken = (usuario) => {
 };
 
 async function register(req, res) {
-  const { nombre, correo, contrasena, rol } = req.body;
-  const existente = await model.buscarPorCorreo(correo);
-  if (existente) return res.status(400).json({ mensaje: 'El correo ya está registrado.' });
+  try {
+    const { nombre, correo, contrasena, rol } = req.body;
+    const existente = await model.buscarPorCorreo(correo);
+    if (existente) return res.status(400).json({ mensaje: 'El correo ya está registrado.' });
 
-  const hash = await bcrypt.hash(contrasena, 10);
-  const id = await model.crearUsuario({ nombre, correo, contrasena: hash, rol });
-  res.status(201).json({ id, mensaje: 'Usuario registrado correctamente.' });
+    const hash = await bcrypt.hash(contrasena, 10);
+    const id = await model.crearUsuario({ nombre, correo, contrasena: hash, rol });
+
+    // Enviar notificación al nuevo usuario
+    await axios.post('http://localhost:3004/notificaciones', {
+      idUsuario: id,
+      mensaje: `¡Bienvenido ${nombre}! Tu cuenta ha sido creada exitosamente.`
+    });
+
+    res.status(201).json({ id, mensaje: 'Usuario registrado correctamente.' });
+  } catch (error) {
+    console.error('Error en registro:', error);
+    res.status(500).json({ mensaje: 'Error interno en el registro' });
+  }
 }
 
 async function login(req, res) {
@@ -82,7 +95,7 @@ module.exports = {
   login,
   validateToken,
   obtenerUsuarios,
-  obtenerUsuarioPorId, // 👈 exportación agregada
+  obtenerUsuarioPorId,
   eliminarUsuario,
   editarUsuario
 };

@@ -27,7 +27,7 @@ module.exports = {
   },
 
   async marcarLeida(id) {
-    await db.query('UPDATE notificaciones SET leido = TRUE WHERE id = ?', [id]);
+    await db.query('UPDATE notificaciones SET leida = TRUE WHERE id = ?', [id]);
   },
 
   async eliminar(id) {

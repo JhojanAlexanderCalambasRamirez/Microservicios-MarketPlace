@@ -34,6 +34,12 @@ async function crear(req, res) {
       if (productoBD.stock < prod.cantidad) {
         return res.status(400).json({ mensaje: `Stock insuficiente para ${productoBD.nombre}` });
       }
+
+      // 🔄 Descontar stock automáticamente
+      await axios.put(`http://localhost:3001/productos/${prod.id}/stock`, {
+        cantidadVendida: prod.cantidad
+      });
+
       prod.id = productoBD.id;
       prod.idVendedor = productoBD.idVendedor;
       prod.precio = productoBD.precio;
@@ -59,6 +65,18 @@ async function crear(req, res) {
       });
 
       ids.push(id);
+
+      // 🔔 Notificar comprador
+      await axios.post('http://localhost:3004/notificaciones', {
+        idUsuario: idComprador,
+        mensaje: `🧾 Tu orden #${id} fue generada exitosamente.`
+      });
+
+      // 🔔 Notificar vendedor
+      await axios.post('http://localhost:3004/notificaciones', {
+        idUsuario: parseInt(idVendedor),
+        mensaje: `📦 Recibiste una nueva orden (#${id}) con productos para enviar.`
+      });
     }
 
     res.status(201).json({ mensaje: 'Ordenes generadas correctamente', ordenesCreadas: ids });
@@ -99,6 +117,16 @@ async function actualizar(req, res) {
     }
 
     await model.actualizarEstado(idOrden, nuevoEstado);
+
+    if (nuevoEstado === 'entregado') {
+      const orden = await model.obtenerPorId(idOrden);
+
+      // 🔔 Notificar al comprador que su orden fue entregada
+      await axios.post('http://localhost:3004/notificaciones', {
+        idUsuario: orden.idComprador,
+        mensaje: `✅ Tu orden #${idOrden} ha sido entregada. ¡Gracias por tu compra!`
+      });
+    }
 
     res.json({ mensaje: 'Estado actualizado correctamente' });
   } catch (error) {

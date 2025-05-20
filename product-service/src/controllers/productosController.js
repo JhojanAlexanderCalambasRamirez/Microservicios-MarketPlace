@@ -26,10 +26,40 @@ async function eliminar(req, res) {
   res.status(204).send();
 }
 
+// Nuevo controlador para actualizar el stock
+async function actualizarStock(req, res) {
+  const id = req.params.id;
+  const { cantidadVendida } = req.body;
+
+  if (!cantidadVendida || isNaN(cantidadVendida)) {
+    return res.status(400).json({ mensaje: 'Cantidad vendida inválida.' });
+  }
+
+  try {
+    const producto = await model.obtenerPorId(id);
+    if (!producto) {
+      return res.status(404).json({ mensaje: 'Producto no encontrado.' });
+    }
+
+    if (producto.stock < cantidadVendida) {
+      return res.status(400).json({ mensaje: 'Stock insuficiente.' });
+    }
+
+    const nuevoStock = producto.stock - cantidadVendida;
+    await model.actualizarStock(id, nuevoStock);
+
+    res.json({ mensaje: 'Stock actualizado', stockRestante: nuevoStock });
+  } catch (error) {
+    console.error('Error al actualizar stock:', error);
+    res.status(500).json({ mensaje: 'Error interno al actualizar el stock.' });
+  }
+}
+
 module.exports = {
   listar,
   ver,
   crear,
   actualizar,
-  eliminar
+  eliminar,
+  actualizarStock 
 };
