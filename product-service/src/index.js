@@ -6,10 +6,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Cargar rutas
 const productosRoutes = require('./routes/productosRoutes');
 app.use('/productos', productosRoutes);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => {
   console.log(`🛍️ Product-service corriendo en puerto ${PORT}`);
 });

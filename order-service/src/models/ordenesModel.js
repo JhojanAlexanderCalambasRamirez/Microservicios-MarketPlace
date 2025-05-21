@@ -64,6 +64,18 @@ async function obtenerPorId(id) {
     return orden;
 }
 
+async function restaurarStock(productos) {
+    for (const item of productos) {
+        const { id, cantidad } = item;
+        if (id && cantidad) {
+            await db.query(
+                'UPDATE productos SET stock = stock + ? WHERE id = ?',
+                [cantidad, id]
+            );
+        }
+    }
+}
+
 module.exports = {
     crearOrden,
     obtenerTodas,
@@ -71,5 +83,6 @@ module.exports = {
     actualizarEstado,
     eliminar,
     obtenerEstadoYProductos,
-    obtenerPorId 
+    obtenerPorId,
+    restaurarStock 
 };

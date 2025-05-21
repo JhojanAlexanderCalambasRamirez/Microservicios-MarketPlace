@@ -7,6 +7,9 @@ router.get('/:id', ctrl.ver);
 router.post('/', ctrl.crear);
 router.put('/:id', ctrl.actualizar);
 router.delete('/:id', ctrl.eliminar);
-router.put('/:id/stock', ctrl.actualizarStock);
+
+// 👇 rutas adicionales
+router.put('/:id/stock', ctrl.actualizarStock);      // para descontar
+router.put('/:id/incrementar', ctrl.incrementarStock); // para reponer
 
 module.exports = router;

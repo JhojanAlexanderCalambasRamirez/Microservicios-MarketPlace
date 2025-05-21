@@ -1,5 +1,7 @@
 const mysql = require('mysql2/promise');
+const axios = require('axios');
 require('dotenv').config();
+
 
 const db = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
@@ -93,6 +95,17 @@ async function actualizarStock(id, nuevoStock) {
   await db.query('UPDATE productos SET stock = ? WHERE id = ?', [nuevoStock, id]);
 }
 
+async function incrementarStock(idProducto, cantidad) {
+  try {
+    await axios.put(`http://localhost:3001/productos/${idProducto}/incrementar`, {
+      cantidad
+    });
+  } catch (error) {
+    console.error(`[ERROR] No se pudo incrementar el stock del producto ${idProducto}:`, error);
+    throw error;
+  }
+}
+
 module.exports = {
   obtenerTodos,
   obtenerPorId,
@@ -101,5 +114,6 @@ module.exports = {
   eliminar,
   actualizarStock,
   descontarStockLote,
-  reponerStockLote
+  reponerStockLote,
+  incrementarStock
 };
