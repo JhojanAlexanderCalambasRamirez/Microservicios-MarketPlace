@@ -4,7 +4,7 @@ require('dotenv').config();
 
 
 const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || 'tienda-uao.com',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'product_service',
@@ -97,7 +97,7 @@ async function actualizarStock(id, nuevoStock) {
 
 async function incrementarStock(idProducto, cantidad) {
   try {
-    await axios.put(`http://localhost:3001/productos/${idProducto}/incrementar`, {
+    await axios.put(`http://tienda-uao.com:3001/productos/${idProducto}/incrementar`, {
       cantidad
     });
   } catch (error) {

@@ -2,8 +2,18 @@ const model = require('../models/notificacionesModel');
 
 async function crear(req, res) {
   try {
-    const id = await model.crear(req.body);
+    const { idUsuario, mensaje } = req.body;
+
+    // Validación explícita de los campos requeridos
+    if (!idUsuario || !mensaje) {
+      return res.status(400).json({
+        mensaje: 'Faltan campos requeridos: idUsuario y mensaje son obligatorios.'
+      });
+    }
+
+    const id = await model.crear({ idUsuario, mensaje });
     res.status(201).json({ id, mensaje: 'Notificación creada' });
+
   } catch (error) {
     console.error('Error al crear notificación:', error);
     res.status(500).json({ mensaje: 'Error interno al crear notificación' });

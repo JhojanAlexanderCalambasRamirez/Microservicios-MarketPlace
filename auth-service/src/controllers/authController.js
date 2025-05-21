@@ -18,8 +18,7 @@ async function register(req, res) {
     const hash = await bcrypt.hash(contrasena, 10);
     const id = await model.crearUsuario({ nombre, correo, contrasena: hash, rol });
 
-    // Enviar notificación al nuevo usuario
-    await axios.post('http://localhost:3004/notificaciones', {
+    await axios.post('http://172.16.0.3:3004/notificaciones', {
       idUsuario: id,
       mensaje: `¡Bienvenido ${nombre}! Tu cuenta ha sido creada exitosamente.`
     });
